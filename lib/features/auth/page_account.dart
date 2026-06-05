@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sync_team/features/auth/page_info.dart';
+import 'package:sync_team/features/group/screen/group_screen.dart';
+import 'package:sync_team/features/notification/notification_screen.dart';
 import 'page_login.dart';
 
 class PageAccount extends StatefulWidget {
@@ -170,9 +172,9 @@ class PageAccountState extends State<PageAccount> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _StatItem(value: groupCount.toString(), label: 'Nhóm'),
+                StatItem(value: groupCount.toString(), label: 'Nhóm'),
                 Container(width: 1, height: 36, color: const Color(0xFF2A3448)),
-                _StatItem(value: taskCount.toString(), label: 'Task'),
+                StatItem(value: taskCount.toString(), label: 'Task'),
               ],
             ),
           ),
@@ -181,26 +183,28 @@ class PageAccountState extends State<PageAccount> {
             icon: Icons.person_outline,
             label: "Thông tin cá nhân",
             onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => PagePersonalInfo(profile: profile),
-              ),
+            ),
             ),
           ),
           const SizedBox(height: 10),
           MenuItem(
             icon: Icons.notifications_none_outlined,
             label: "Thông báo",
-            onTap: () {},
+            onTap: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => NotificationScreen()),
+              );
+            },
           ),
           const SizedBox(height: 10),
           MenuItem(
             icon: Icons.group_outlined,
             label: 'Groups',
-            onTap: () {},
-          ),
-          const SizedBox(height: 10),
-          MenuItem(
-            icon: Icons.task_outlined,
-            label: 'Task Manager',
-            onTap: () {},
+            onTap: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => GroupScreen()),
+              );
+            },
           ),
           const SizedBox(height: 24),
           TextButton.icon(
@@ -232,10 +236,10 @@ class MenuItem extends StatelessWidget {
     );
   }
 }
-class _StatItem extends StatelessWidget {
+class StatItem extends StatelessWidget {
   final String value;
   final String label;
-  const _StatItem({required this.value, required this.label});
+  const StatItem({required this.value, required this.label});
   @override
   Widget build(BuildContext context) {
     return Column(
