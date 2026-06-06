@@ -17,26 +17,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
     super.initState();
     load();
   }
-
   Future<void> load() async {
     notifications = await NotificationService.getMyNotifications();
     setState(() => isLoading = false);
   }
-
   Map<String, List> groupData() {
     Map<String, List> map = {
       "task": [],
       "group": [],
-      "system": [],
     };
-
     for (var n in notifications) {
       if (n['type'] == 'task') {
         map["task"]!.add(n);
       } else if (n['type'] == 'group') {
         map["group"]!.add(n);
-      } else {
-        map["system"]!.add(n);
       }
     }
     return map;
@@ -52,21 +46,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
         title: const Text("Thông báo", style: TextStyle(color: Colors.white, fontWeight:FontWeight.bold),
         ),
       ),
-
       body: isLoading ? const Center(child: CircularProgressIndicator())
           : ListView(
         padding: const EdgeInsets.all(12),
         children: [
           section("Task", data["task"]!, Colors.blue),
           section("Group", data["group"]!, Colors.purple),
-          section("System", data["system"]!, Colors.orange),
         ],
       ),
     );
   }
   Widget section(String title, List items, Color color) {
     if (items.isEmpty) return const SizedBox();
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -81,7 +72,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
             ),
           ),
         ),
-
         Column(
           children: [
             for (var i = 0; i < items.length; i++)
@@ -91,9 +81,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
       ],
     );
   }
-
   Widget _item(Map item, Color color) {
-    final isRead = item['is_read'] == true;
+    String _formatTime(String? time) {
+      if (time == null) return '';
+      final dt = DateTime.tryParse(time);
+      if (dt == null) return '';
+      return "${dt.hour}:${dt.minute} ${dt.day}/${dt.month}/${dt.year}";
+    }
+    final createdAt = item['created_at'];
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
@@ -112,29 +107,42 @@ class _NotificationScreenState extends State<NotificationScreen> {
             ),
             child: Icon(icon(item['type']), color: color),
           ),
+
           const SizedBox(width: 12),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item['title'] ?? '', style: const TextStyle(color: Colors.white,fontWeight: FontWeight.w600,
+                Text(
+                  item['title'] ?? '',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
+
                 const SizedBox(height: 4),
-                Text(item['message'] ?? '', style: const TextStyle(color: Colors.white54, fontSize: 12,),
+
+                Text(
+                  item['message'] ?? '',
+                  style: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 12,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+                Text(
+                  _formatTime(createdAt),
+                  style: const TextStyle(
+                    color: Colors.white38,
+                    fontSize: 11,
+                  ),
                 ),
               ],
             ),
           ),
-          if (!isRead)
-            Container(
-              width: 10,
-              height: 10,
-              decoration: const BoxDecoration(
-                color: Colors.blue,
-                shape: BoxShape.circle,
-              ),
-            ),
         ],
       ),
     );

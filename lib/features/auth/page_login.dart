@@ -84,7 +84,7 @@ class PageLoginState extends State<PageLogin> {
                   child: Text("Đăng nhập để tiếp tục học nhóm", style: TextStyle(color: Color(0xFF8892A4), fontSize: 20),),
               ),
               Center(
-                child:Image.asset("asset/images/98c666a371f6a1b9544a07b6a63c3bf0.jpg", width: double.infinity, height: 250, fit: BoxFit.fill
+                child:Image.asset("asset/images/z7906159851399_c6901ee6f9290211b8abea5dab569777.jpg", width: double.infinity, height: 250, fit: BoxFit.fill
                 ),
               ),
               const SizedBox(height: 32),
