@@ -1,74 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:sync_team/features/auth/authController.dart';
 import 'package:sync_team/features/auth/page_account.dart';
-import 'package:sync_team/main.dart';
 import 'page_register.dart';
-import 'page_verify_otp.dart';
 
 class PageLogin extends StatefulWidget {
   const PageLogin({super.key});
 
   @override
-  State<PageLogin> createState() => PageLoginState();
+  State<PageLogin> createState() => _PageLoginState();
 }
-
-class PageLoginState extends State<PageLogin> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  bool obscurePassword = true;
-  bool isLoading = false;
+class _PageLoginState extends State<PageLogin> {
+  final _authController = AuthController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
   Future<void> _handleLogin() async {
-    if (emailController.text.trim().isEmpty ||
-        passwordController.text.trim().isEmpty) {
-      showSnackBar('Vui lòng nhập đầy đủ thông tin');
+    final error = _authController.validateLogin(
+      email: _emailController.text,
+      password: _passwordController.text,
+    );
+    if (error != null) {
+      _showSnackBar(error);
       return;
     }
-    setState(() => isLoading = true);
+    setState(() => _isLoading = true);
     try {
-      final response = await Supabase.instance.client.auth.signInWithPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
+      final response = await _authController.login(
+        email: _emailController.text,
+        password: _passwordController.text,
       );
+
       if (response.user != null && mounted) {
-        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => PageAccount()
-          ),(route) => false,
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const PageAccount()),
+              (route) => false,
         );
       }
-    } on AuthException catch (e) {showSnackBar(mapAuthError(e.message));
-    } catch (e) {showSnackBar('Có lỗi xảy ra. Vui lòng thử lại.');
+      //hien loi
+    } on AuthException catch (e) {
+      _showSnackBar(_authController.mapAuthError(e.message));
     } finally {
-      if (mounted) setState(() => isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
-  String mapAuthError(String message) {
-    if (message.contains('Invalid login credentials')) {
-      return 'Email hoặc mật khẩu không đúng';
-    } else if (message.contains('Email not confirmed')) {
-      return 'Vui lòng xác thực email trước khi đăng nhập';
-    }
-    return message;
-  }
-  void showSnackBar(String message) {
+
+  void _showSnackBar(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
         content: Text(message),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(000000),
+      backgroundColor: const Color(0xFF000000),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -77,32 +78,53 @@ class PageLoginState extends State<PageLogin> {
             children: [
               const SizedBox(height: 64),
               const Center(
-                  child: Text("Chào mừng trở lại!", style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold,),)
+                child: Text(
+                  'Chào mừng trở lại!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               const SizedBox(height: 6),
               const Center(
-                  child: Text("Đăng nhập để tiếp tục học nhóm", style: TextStyle(color: Color(0xFF8892A4), fontSize: 20),),
+                child: Text(
+                  'Đăng nhập để tiếp tục học nhóm',
+                  style: TextStyle(color: Color(0xFF8892A4), fontSize: 20),
+                ),
               ),
               Center(
-                child:Image.asset("asset/images/z7906159851399_c6901ee6f9290211b8abea5dab569777.jpg", width: double.infinity, height: 250, fit: BoxFit.fill
+                child: Image.asset(
+                  'asset/images/z7906159851399_c6901ee6f9290211b8abea5dab569777.jpg',
+                  width: double.infinity,
+                  height: 250,
+                  fit: BoxFit.fill,
                 ),
               ),
               const SizedBox(height: 32),
               DarkTextField(
-                controller: emailController,
+                controller: _emailController,
                 hint: 'Email',
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 24),
               DarkTextField(
-                controller: passwordController,
+                controller: _passwordController,
                 hint: 'Mật khẩu',
                 icon: Icons.lock_outline,
-                obscureText: obscurePassword,
+                obscureText: _obscurePassword,
                 suffixIcon: IconButton(
-                  icon: Icon(obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: const Color(0xFF4A5568), size: 20,),
-                  onPressed: () => setState(() => obscurePassword = !obscurePassword),
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: const Color(0xFF4A5568),
+                    size: 20,
+                  ),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                 ),
               ),
               const SizedBox(height: 20),
@@ -110,28 +132,49 @@ class PageLoginState extends State<PageLogin> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: isLoading ? null : _handleLogin,
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2563EB),
-                    disabledBackgroundColor: const Color(0xFF2563EB).withOpacity(0.6),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12),
-                    ),
+                  onPressed: _isLoading ? null : _handleLogin,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2563EB),
+                    disabledBackgroundColor:
+                    const Color(0xFF2563EB).withOpacity(0.6),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     elevation: 0,
                   ),
-                  child: isLoading ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2,),
+                  child: _isLoading
+                      ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                        color: Colors.white, strokeWidth: 2),
                   )
-                      : const Text("Đăng nhập", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600,),),
+                      : const Text(
+                    'Đăng nhập',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600),
+                  ),
                 ),
               ),
               const SizedBox(height: 30),
-              // ── Sign up hint ──
               Center(
                 child: GestureDetector(
                   onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => const PageRegister()),
+                    MaterialPageRoute(builder: (_) => const PageRegister()),
                   ),
-                  child: RichText(text: const TextSpan(text: "Chưa có tài khoản? ", style: TextStyle(color: Color(0xFF4A5568), fontSize: 14),
+                  child: RichText(
+                    text: const TextSpan(
+                      text: 'Chưa có tài khoản? ',
+                      style:
+                      TextStyle(color: Color(0xFF4A5568), fontSize: 14),
                       children: [
-                        TextSpan(text: "Đăng ký ngay", style: TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.w600,),),
+                        TextSpan(
+                          text: 'Đăng ký ngay',
+                          style: TextStyle(
+                              color: Color(0xFF2563EB),
+                              fontWeight: FontWeight.w600),
+                        ),
                       ],
                     ),
                   ),
@@ -145,7 +188,6 @@ class PageLoginState extends State<PageLogin> {
     );
   }
 }
-
 class DarkTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
@@ -187,7 +229,8 @@ class DarkTextField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+          borderSide:
+          const BorderSide(color: Color(0xFF2563EB), width: 1.5),
         ),
         contentPadding:
         const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

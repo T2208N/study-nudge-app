@@ -20,7 +20,6 @@ class PagePersonalInfo extends StatelessWidget {
     final email = profile?['email'] ?? '—';
     final phone = profile?['phonenumber']?.toString() ?? '—';
     final createdAt = _formatDate(profile?['created_at']?.toString());
-
     return Scaffold(
       backgroundColor: const Color(0xFF0A0F1E),
       appBar: AppBar(
@@ -42,8 +41,6 @@ class PagePersonalInfo extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-            // ── Hero card ──
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(color: const Color(0xFF1A2A5E), borderRadius: BorderRadius.circular(20)),
@@ -83,9 +80,7 @@ class PagePersonalInfo extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 20),
-
             const Row(
               children: [
                 Icon(Icons.person_outline, color: Color(0xFF60A5FA), size: 18),

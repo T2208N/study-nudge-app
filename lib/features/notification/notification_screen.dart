@@ -86,7 +86,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       if (time == null) return '';
       final dt = DateTime.tryParse(time);
       if (dt == null) return '';
-      return "${dt.hour}:${dt.minute} ${dt.day}/${dt.month}/${dt.year}";
+      return "${dt.day}/${dt.month}/${dt.year}";
     }
     final createdAt = item['created_at'];
     return Container(

@@ -12,6 +12,7 @@ class GroupScreen extends StatefulWidget {
 class _GroupScreenState extends State<GroupScreen> {
   final groupNameController = TextEditingController();
   final groupCodeController = TextEditingController();
+  bool isLoading = true;
 
   List myGroups = [];
 
@@ -22,8 +23,22 @@ class _GroupScreenState extends State<GroupScreen> {
   }
 
   Future<void> loadMyGroups() async {
-    myGroups = await GroupService.getMyGroups();
-    setState(() {});
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+      });
+    }
+    try {
+      myGroups = await GroupService.getMyGroups();
+      setState(() {});
+    }
+    finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
   }
 
   void openGroup(Map<String, dynamic> group) {
@@ -42,10 +57,6 @@ class _GroupScreenState extends State<GroupScreen> {
 
   Future<void> createGroup() async {
     final name = groupNameController.text.trim();
-
-    if (name.isEmpty) {
-      return;
-    }
 
     final group = await GroupService.createGroup(name);
 
@@ -390,7 +401,11 @@ class _GroupScreenState extends State<GroupScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(18),
-        child: myGroups.isEmpty
+        child: isLoading
+            ? const Center(
+          child: CircularProgressIndicator(),
+        )
+            : myGroups.isEmpty
             ? const Center(
           child: Text(
             "Bạn chưa tham gia nhóm nào",
